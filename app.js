@@ -1,37 +1,30 @@
 //Variables
-const express = require('express');
 const inquirer = require ('inquirer');
 const table = require('console.table');
+const connection = require('./db/connection')
 
-const {
-  viewDep,
-  viewRoles,
-  viewEmp,
-  addDep,
-  addRole,
-  addEmp,
-  updateEmp,
-  getDep,
-  getManagers,
-  getRoles,
-  getEmp,
-  selectEmp,
-} = require("./helpers/queries");
+// const {
+//   viewDep,
+//   viewRoles,
+//   viewEmp,
+//   addDep,
+//   addRole,
+//   addEmp,
+//   updateEmp,
+//   getDep,
+//   getManagers,
+//   getRoles,
+//   getEmp,
+//   selectEmp,
+// } = require("./helpers/queries");
 
-//assigned the value of environment. variable PORT
-const PORT = process.env.PORT || 3001;
-//Express instance
-const app = express();
-//Middleware
-app.use(express.urlencoded({ extended: false}));
-app.use(express.json());
-
-//Middleware function sets the respone status code to 404
-app.use((req, res) => {;
-  res.status(404).end();
+connection.connect(function (error) {
+  if (error) {
+    throw error;
+  }
+  console.log("connection success");
+  mainPrompt()
 });
-//Starts the Express server and listen on the specified PORT
-app.listen(PORT,() => {});
 
 //This function prompts the user for a choice, executes a corresponding action based on the selected choice and then repeats the process until the user decides to exit the program
 function mainPrompt() {
@@ -52,29 +45,30 @@ function mainPrompt() {
         ],
       },
     ])
-    .then(async (answers) => {
+    .then(answers => {
+      // console.log(answers)
       // switch case runs functions depending on user selection
       switch (answers.do) {
         case "View departments":
-          await viewDepartments();
+          viewDepartments();
           break;
         case "View roles":
-          await viewRoles();
+          viewRoles();
           break;
         case "View employees":
-          await viewEmployees();
+         viewEmployees();
           break;
         case "Add Department":
-          await addDepartmentPrompt();
+         addDepartmentPrompt();
           break;
         case "Add Role":
-          await addRolePrompt();
+          addRolePrompt();
           break;
         case "Add Employee":
-          await addEmployeePrompt();
+         addEmployeePrompt();
           break;
         case "Update Employee Role":
-          await updateEmployeePrompt();
+          updateEmployeePrompt();
           break;
       }
       return;
@@ -82,6 +76,7 @@ function mainPrompt() {
     .catch((error) => {
       console.error(error);
     })
+    
     .then(() => {
       //The function starts over again returning to first prompts
       return mainPrompt();
@@ -89,6 +84,16 @@ function mainPrompt() {
 }
 
 
+function viewDepartments() {
+  // console.log("View Dept")
+  connection.query("SELECT * FROM department", function(error, results){
+    if (error) {
+      throw error}
+      console.log(results)
+      console.table(results)
+  })
+  
+}
 
 
 
@@ -261,5 +266,5 @@ async function updateEmployeePrompt() {
 }
 
 
-mainPrompt();
+
 

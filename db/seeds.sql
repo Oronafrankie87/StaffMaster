@@ -31,6 +31,6 @@ VALUES
     ('Fartman', 'McFarterson', 6, NULL);
 
 
-UPDATE employee SET manager_id = 2 WHERE id = 1;
-UPDATE employee SET manager_id = 2 WHERE id = 3;
-UPDATE employee SET manager_id = 2 WHERE id = 4;
+-- UPDATE employee SET manager_id = 2 WHERE id = 1;
+-- UPDATE employee SET manager_id = 2 WHERE id = 3;
+-- UPDATE employee SET manager_id = 2 WHERE id = 4;
