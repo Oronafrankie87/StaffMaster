@@ -1,25 +1,35 @@
-USE employee_db;
+USE staffMaster_db;
 
 INSERT INTO department (name)
+
 VALUES
     ('Sales'),
     ('Customer Service'),
+    ('Manager'),
     ('Marketing'),
-    ('Manager');
+    ('Director'),
+    ('CFO');
 
-INSERT INTO employee_role (title, salary, department_id)
+INSERT INTO role (title, salary, department_id)
+
 VALUES
-    ('Sales Representative', 40000, 1),
-    ('Manager', 55000, 4),
-    ('Marketing Coordinator', 80000, 3),
-    ('CS Representative', 35000, 2);
+    ('Sales Rep', 35000, 001),
+    ('Customer Service Rep', 50000, 002),
+    ('Manager', 60000, 003),
+    ('Marketing Coordinator', 90000, 004),
+    ('Director', 100000, 005),
+    ('CFO', 120000, 006);
  
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
+
 VALUES
-    ('John', 'Porter', 1, NULL),
-    ('Crystal', 'Sutherland', 2, NULL),
-    ('Pasqual', 'Bianchi', 3, NULL),
-    ('Chantelle', 'King', 4, NULL);
+    ('Jimmothy', 'Jimmerson', 1, NULL),
+    ('Crystal', 'Crystalson', 2, NULL),
+    ('John', 'Johnsonman', 3, NULL),
+    ('Dingleberry', 'Dannemann', 4, NULL),
+    ('Thaddeous', 'McThatterson', 5, NULL),
+    ('Fartman', 'McFarterson', 6, NULL);
+
 
 UPDATE employee SET manager_id = 2 WHERE id = 1;
 UPDATE employee SET manager_id = 2 WHERE id = 3;
