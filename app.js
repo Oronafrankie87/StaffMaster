@@ -76,7 +76,7 @@ function mainPrompt() {
     .catch((error) => {
       console.error(error);
     })
-    
+
     .then(() => {
       //The function starts over again returning to first prompts
       return mainPrompt();
@@ -95,7 +95,23 @@ function viewDepartments() {
   
 }
 
+function viewRoles() {
+  connection.query("SELECT * FROM role", function(error, results) {
+    if (error) {
+      throw error}
+      console.log(results)
+      console.table(results)
+  })
+}
 
+function viewEmployees() {
+  connection.query("SELECT * FROM employee", function(error, results) {
+    if (error) {
+      throw error}
+      console.log(results)
+      console.table(results)
+  })
+}
 
 //The following function prompts the user to enter a new department name, validates the input to ensure it is not a blank field, and if valid calls the addDepartment() function to handle the process of adding the new department.
 function addDepartmentPrompt() {
