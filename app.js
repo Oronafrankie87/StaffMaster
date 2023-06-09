@@ -3,20 +3,8 @@ const inquirer = require ('inquirer');
 const table = require('console.table');
 const connection = require('./db/connection')
 
-// const {
-//   viewDep,
-//   viewRoles,
-//   viewEmp,
-//   addDep,
-//   addRole,
-//   addEmp,
-//   updateEmp,
-//   getDep,
-//   getManagers,
-//   getRoles,
-//   getEmp,
-//   selectEmp,
-// } = require("./helpers/queries");
+
+
 
 connection.connect(function (error) {
   if (error) {
@@ -113,174 +101,187 @@ function viewEmployees() {
   })
 }
 
-//The following function prompts the user to enter a new department name, validates the input to ensure it is not a blank field, and if valid calls the addDepartment() function to handle the process of adding the new department.
+//addDepartmentPrompt
 function addDepartmentPrompt() {
-  return inquirer.createPromptModule([
-    {
-      name: "department",
+  inquirer
+    .prompt({
       type: "input",
-      message: "Please enter the department name."
-    }
-  ]).then ((answers) => {
-    const newDepartment = answers.department;
-    if (answers.department.length > 0) {
-      return addDepartmentPrompt(newDepartment);
-    }else {
-      console.log('\nError, you cant enter a blank field.\n');
-      return;
-    }
-  }).catch((error) => {
-    console.error(error);
+      name: "dept_name",
+      message: "Enter the name of the new department:"
+    })
+    .then((answer) => {
+      const request = `INSERT INTO dept_tbl (dept_name) VALUES ("${answer.dept_name}");`;
+      db.query(request, (err, res) => {
+        if (err) throw err;
+        console.log(
+          `Department'${answer.dept_name}' has been added to the database`
+        );
+        start();
+      });
+    });
+}
+
+
+function addRolePrompt () {
+  inquirer
+    .prompt(
+      [{
+        type: "input",
+        name: "title",
+        message: "Please enter the title of the new role:"
+      },
+      {
+        type: "input",
+        name: "salary",
+        message: "Please enter the salary of the new role in $:"
+      },
+      {
+        type: "list",
+        name: "dept",
+        message: "Please choose the the department for this role",
+      },
+    ])
+    .then((answers) => {
+      const request = "INSERT INTO role SET ?";
+      db.query(request,
+        {
+          title: answers.title,
+          salary: answers.salary,
+          dept_id: answers.dept, 
+        },
+        (err, res) => {
+          if (err) throw err;
+          console.log(
+            `the role of '${answers.title}' has been added to the database`
+          );
+          start();
+        }
+      );
+    });
+};
+
+
+
+
+
+//
+function addEmployeePrompt() {
+  const sql = "SELECT id, title FROM role";
+  connection.query(sql, (err, res) => {
+    if (err) throw err;
+
+    const role = res.map(({ id, title }) => ({
+      name: title,
+      value: id,
+    }));
+
+    const sql2 =
+      'SELECT id, CONCAT(first_name, " ", last_name) AS name FROM person';
+
+    connection.query(sql2, (err, res) => {
+      if (err) throw err;
+      const managers = res.map(({ id, name }) => ({
+        name,
+        value: id,
+      }));
+      inquirer
+        .prompt([
+          {
+            type: "input",
+            name: "firstName",
+            message: "Please enter the first name of the new employee:"
+          },
+          {
+            type: "input",
+            name: "lastName",
+            message: "Please enter the last name of the new employee:"
+          },
+          {
+            type: "list",
+            name: "roleID",
+            message: "Please choose the role for this ",
+            choices: role,
+          },
+          {
+            type: "list",
+            name: "managerID",
+            message: "Please choose a manager for this employee",
+            choices: [{ name: "none", value: null }, ...managers],
+          },
+        ])
+        .then((answers) => {
+          const request = `INSERT INTO person (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`;
+
+          const values = [
+            answers.firstName,
+            answers.lastName,
+            answers.roleID,
+            answers.managerID,
+          ];
+
+          db.query(request, values, (err, res) => {
+            if (err) throw err;
+            console.log(
+              `the employee '${
+                answers.firstName + " " + answers.lastName
+              }' has been added to the database`
+            );
+            start();
+          });
+        });
+    });
   });
 }
+  
 
-//This code difines an async function named addRole Prompt() that retrieves departments, prompts users to enter information for a new role, validates users input and adds the role using the addRole function.  Any errors that occur during the process are caught and logged.
-async function addRolePrompt() {
-  try {
-    const results = await getDepartments();
-    console.log("\n");
-    const choices = results.map((department) => ({
-      value: department.id,
-      name: department.name,
-    }));
-    const answers = await inquirer.prompt([
-      {
-        name: "name",
-        type: "input",
-        message: "Enter the name of the new role.",
-      },
-      {
-        name: "salary",
-        type: "input",
-        message: "Enter the new role's yearly salary. Use only whole numbers.",
-        validate: function (value) {
-          var valid = !isNaN(parseFloat(value));
-          return valid || "Please enter a whole number without commas.";
-        },
-        filter: Number,
-      },
-      {
-        name: "department_id",
-        type: "list",
-        message: "Choose a department to add the new role to.",
-        choices: choices,
-      },
-    ]);
-    await addRole(answers);
-    return;
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
-}
+//
+function updateEmployeePrompt() {
+  const sql = "SELECT * FROM person";
+  const sql2 = "SELECT * FROM role";
+  const sql3 = 'SELECT id, CONCAT(first_name, " ", last_name) AS name FROM person';
 
+    db.query(sql, (err, res1) =>{
+        if(err) throw err;
+        db.query(sql2, (err, res2) =>{
+            if(err) throw err; 
+            db.query(sql3, (err,res3) => {
+                if(err) throw err;
+                const managers = res3.map(({id, name}) =>({
+                    name, 
+                    value: id,}));
+                    
 
-//This function also uses an async function that retrieves roles and managers, prompts the user for a new employee info and adds the employee using the addEmployee function.  Any errors that occur during the process are caught and logged.
-async function addEmployeePrompt() {
-  try {
-    const roles = await getRoles();
-    console.log("\n");
-    const choices = roles.map((item) => item.title);
-    const answers = await inquirer.prompt([
-      {
-        name: "first_name",
-        type: "input",
-        message: "Enter the first name of the new employee.",
-      },
-      {
-        name: "last_name",
-        type: "input",
-        message: "Enter the last name of the new employee.",
-      },
-      {
-        name: "title",
-        type: "list",
-        message: "Select the new employee's role.",
-        choices: choices,
-      },
-    ]);
-    if (!answers.title.toLowerCase().includes("manager")) {
-      const managers = (await getManagers()).map(
-        (employee) => `${employee.first_name} ${employee.last_name}`
-      );
-      const managerAnswer = await inquirer.prompt([
-        {
-          name: "manager_name",
-          type: "list",
-          message: "Select the new employee's manager.",
-          choices: managers,
-        },
-      ]);
-      const manager = (await getManagers()).find(
-        (employee) =>
-          `${employee.first_name} ${employee.last_name}` ===
-          managerAnswer.manager_name
-      );
-      const employee = {
-        ...answers,
-        role_id: roles.find((role) => role.title === answers.title).id,
-        manager_id: manager.id,
-      };
-      delete employee.title;
-      return addEmployee(employee);
-    } else {
-      const employee = {
-        ...answers,
-        role_id: roles.find((role) => role.title === answers.title).id,
-        manager_id: null,
-      };
-      delete employee.title;
-      return addEmployee(employee);
-    }
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
-}
+                inquirer.prompt([{
+                    type: 'list',
+                    name: 'employee',
+                    message: "Select the employee you'd like to update:",
+                    choices: res1.map((person) => `${person.first_name} ${person.last_name}`),
+                },{
+                    type: 'list',
+                    name: 'newRole',
+                    message: 'Select role:',
+                    choices: res2.map((role) => role.title),
+                }, {
+                    type: "list",
+                    name: "managerID",
+                    message: "Please choose a manager for this employee",
+                    choices: [{name: "none", value: null}, ...managers,],
+                  },
+                ]).then((answers) =>{
+                    const employee = res1.find((person) => `${person.first_name} ${person.last_name}` === answers.employee);
 
+                    const newRole = res2.find((role) => role.title === answers.newRole);
 
+                    const request = 'UPDATE person SET role_id = ?, manager_id = ? WHERE id = ?';
+                    db.query(request, [newRole.id, answers.managerID, employee.id], (err, res) => {
+                        if(err) throw err;
+                        console.log(`Updated ${employee.first_name} ${employee.last_name} with the role of ${newRole.title}`);
+                        start();
+                })
+            })
+        })})
+    })
 
-//This code allows the user to select an employee and update their role, potentially modifying the manager associated with the employee and then updates the employees info in the system.
-async function updateEmployeePrompt() {
-  try {
-    const employees = await getEmployees();
-    const fullNames = employees.map(
-      (employee) =>
-        `${employee.id} ${employee.first_name} ${employee.last_name}`
-    );
-    const { employee_name } = await inquirer.prompt([
-      {
-        name: "employee_name",
-        type: "list",
-        message: "Select the employee that you would like to update.",
-        choices: fullNames,
-      },
-    ]);
-    const roles = await getRoles();
-    const allRoles = roles.map((role) => role.title);
-    const { role_name } = await inquirer.prompt([
-      {
-        name: "role_name",
-        type: "list",
-        message: `Select the new role for: ${employee_name}.`,
-        choices: allRoles,
-      },
-    ]);
-    const employeeId = parseInt(employee_name.split(" ")[0]);
-    const roleId = roles.find((role) => role.title === role_name);
-    const selectedEmployee = await selectEmployee(employeeId);
-    selectedEmployee[0].role_id = roleId.id;
-    if (!role_name.toLowerCase().includes("manager")) {
-      selectedEmployee[0].manager_id = null;
-    }
-    await updateEmployee(selectedEmployee[0]);
-    return;
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
-}
+};
 
-
-
-
+mainPrompt();
