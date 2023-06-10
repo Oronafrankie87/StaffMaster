@@ -25,10 +25,10 @@ INSERT INTO employee (first_name, last_name, role_id, manager_id)
 VALUES
     ('Jimmothy', 'Jimmerson', 1, NULL),
     ('Crystal', 'Crystalson', 2, NULL),
-    ('John', 'Johnsonman', 3, NULL),
-    ('Dingleberry', 'Dannemann', 4, NULL),
+    ('John', 'Johnman', 3, NULL),
+    ('Richard', 'Von Richardson', 4, NULL),
     ('Thaddeous', 'McThatterson', 5, NULL),
-    ('Fartman', 'McFarterson', 6, NULL);
+    ('Tulula', 'Tartarsauce', 6, NULL);
 
 
 -- UPDATE employee SET manager_id = 2 WHERE id = 1;
